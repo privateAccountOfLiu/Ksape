@@ -1,0 +1,7 @@
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.4;font-size:13px;height:100dvh;background:var(--bg);color:var(--tx)}
+:root{--bg:#0a0e14;--bg2:#12171f;--bg3:#1a1f2b;--bg4:#222838;--tx:#cdd6f4;--tx2:#9399b2;--tx3:#585b70;--ac:#89b4fa;--ac2:#4580e6;--gr:#a6e3a1;--gr2:#40a02b;--rd:#f38ba8;--rd2:#d20f39;--yw:#f9e2af;--bd:#2a3040;--bd2:#1e2330;--r:8px;--r2:4px;--mono:'JetBrains Mono','Fira Code','Consolas',monospace;--sans:system-ui,sans-serif;--hdr:48px;--ftr:40px}
+img,svg{display:block;max-width:100%}
+button,input,select,textarea{font:inherit}
+table{border-collapse:collapse;width:100%}

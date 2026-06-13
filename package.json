@@ -1,0 +1,12 @@
+{
+  "name": "ksape",
+  "version": "0.1.0",
+  "description": "Android KernelSU Process Manager - Advanced process monitoring and management tool",
+  "scripts": {
+    "build": "node scripts/package.js"
+  },
+  "dependencies": {
+    "esbuild": "^0.28.1",
+    "kernelsu": "^3.0.2"
+  }
+}
