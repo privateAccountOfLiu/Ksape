@@ -23,8 +23,9 @@ body{display:grid;grid-template-rows:var(--hdr) 1fr var(--ftr);grid-template-col
 }
 @media(max-width:400px){
   #main{grid-template-columns:1fr}
-  #toolbar{gap:4px;padding:0 8px}
-  #search-in{width:70px;font-size:10px}
+  #toolbar{gap:4px;padding:0 8px;justify-content:space-evenly}
+  #toolbar>*{flex-shrink:1}
+  #search-in{width:60px;font-size:10px}
   #perf-dash{grid-template-columns:1fr}
   #sbar{gap:6px;font-size:9px;padding:0 8px}
   .proc-table th{padding:5px 8px;font-size:9px}
