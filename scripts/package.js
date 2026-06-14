@@ -14,7 +14,6 @@ fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(pkgDir, { recursive: true });
 
 fs.copyFileSync(path.join(root, 'module.prop'), path.join(pkgDir, 'module.prop'));
-fs.copyFileSync(path.join(root, 'action.sh'), path.join(pkgDir, 'action.sh'));
 copyDir(path.join(root, 'webroot'), path.join(pkgDir, 'webroot'));
 
 const zipPath = path.join(distDir, zipName);

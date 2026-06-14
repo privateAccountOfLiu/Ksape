@@ -43,7 +43,10 @@
       "Bash(adb shell *)",
       "Bash(awk '$4==\"0A\"')",
       "Bash(adb push *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git rm *)"
     ]
   }
 }
