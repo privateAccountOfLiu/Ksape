@@ -9,10 +9,10 @@ export function update() {
 
   document.getElementById('sbar').innerHTML =
     '<span class="sbar-item"><span class="sl">CPU</span>' +
-    '<span class="sbar-b"><span class="bt"><span class="bf bf-cpu" style="width:' + Math.min(s.cpuPct, 100).toFixed(0) + '%"></span></span>' +
+    '<span class="sbar-b"><span class="bt"><span class="bf bf-cpu" style="width:' + Math.min(s.cpuPct || 0, 100).toFixed(0) + '%"></span></span>' +
     '<span class="sv">' + formatNum(s.cpuPct) + '%</span></span></span>' +
     '<span class="sbar-item"><span class="sl">MEM</span>' +
-    '<span class="sbar-b"><span class="bt"><span class="bf bf-mem" style="width:' + Math.min(memPct, 100).toFixed(0) + '%"></span></span>' +
+    '<span class="sbar-b"><span class="bt"><span class="bf bf-mem" style="width:' + Math.min(memPct || 0, 100).toFixed(0) + '%"></span></span>' +
     '<span class="sv">' + formatBytes((total - avail) * 1024) + ' / ' + formatBytes(total * 1024) + '</span></span></span>' +
     '<span class="sbar-item"><span class="sl">Load</span><span class="sv">' + (s.load ? formatNum(s.load.l1, 2) : '--') + ' ' + (s.load ? formatNum(s.load.l5, 2) : '--') + ' ' + (s.load ? formatNum(s.load.l15, 2) : '--') + '</span></span>' +
     '<span class="sbar-item"><span class="sl">Up</span><span class="sv">' + formatUptime(s.uptime) + '</span></span>' +

@@ -90,7 +90,7 @@ export async function collectFreq()    { try { var r = await exec(CMD.freq); ret
 export async function collectCores()   { try { var r = await exec(CMD.cores); return parseInt((r.stdout || '').trim(), 10) || 4; } catch (e) { return 4; } }
 export async function collectSysInfo() { try { var r = await exec(CMD.sysinfo); return (r.stdout || '').replace(/</g, '&lt;'); } catch (e) { return 'Error: ' + String(e); } }
 export async function killProc(pid)    { var r = await exec("kill -9 " + pid + " 2>/dev/null"); return { success: r.errno === 0, stderr: r.stderr }; }
-export async function reniceProc(pid, pri) { var r = await exec("renice " + pri + " -p " + pid + " 2>/dev/null"); return { success: r.errno === 0, stderr: r.stderr }; }
+export async function reniceProc(pid, pri) { var r = await exec("renice -n " + pri + " " + pid + " 2>/dev/null"); return { success: r.errno === 0, stderr: r.stderr }; }
 
 export async function collectProcNet(pid) {
   try {
