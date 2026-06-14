@@ -4,3 +4,4 @@ dist/
 src/
 *.zip
 *.tar.gz
+.claude/

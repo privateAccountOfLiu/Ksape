@@ -9,6 +9,7 @@ const CMD = {
   load: "cat /proc/loadavg 2>/dev/null",
   uptime: "cat /proc/uptime 2>/dev/null",
   freq: "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null",
+  cores: "grep -c ^processor /proc/cpuinfo 2>/dev/null",
   net: "cat /proc/net/tcp /proc/net/udp 2>/dev/null",
   sysinfo: "echo 'SYS:';uname -a 2>/dev/null;echo 'MEM:';cat /proc/meminfo 2>/dev/null;echo 'STO:';df -h 2>/dev/null;echo 'LOG:';dmesg 2>/dev/null | tail -n 30",
 };
@@ -108,6 +109,10 @@ export async function collectProcNet(pid) {
 
 export async function collectFreq() {
   try { var r = await exec(CMD.freq); return parseInt((r.stdout || '').trim(), 10) || 0; } catch (e) { return 0; }
+}
+
+export async function collectCores() {
+  try { var r = await exec(CMD.cores); return parseInt((r.stdout || '').trim(), 10) || 4; } catch (e) { return 4; }
 }
 
 export async function collectSysInfo() {

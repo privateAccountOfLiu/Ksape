@@ -34,7 +34,7 @@ export function render() {
     h += '<tr data-pid="' + p.pid + '"' + sel + '>' +
       '<td style="text-align:center"><span class="state-dot ' + fd(p.state) + '"></span></td>' +
       '<td>' + p.pid + '</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">' + esc(p.name) + '</td>' +
-      '<td style="text-align:right">' + (p.cpuPct || 0).toFixed(1) + '</td>' +
+      '<td style="text-align:right">' + normalizeCpu(p.cpuPct) + '</td>' +
       '<td style="text-align:right">' + fb((p.rssKb || 0) * 1024) + '</td>' +
       '<td>' + esc(p.user) + '</td></tr>';
   }
@@ -64,4 +64,9 @@ export function render() {
   }
 }
 
+function normalizeCpu(val) {
+  var cores = getSt().cpuCores || 4;
+  var pct = (val || 0) / cores;
+  return Math.min(pct, 100).toFixed(1);
+}
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }

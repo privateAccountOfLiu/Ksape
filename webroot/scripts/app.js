@@ -1,5 +1,5 @@
 import { getSt, setSt, sub } from './store.js';
-import { collectOverview, collectFreq } from './collector.js';
+import { collectOverview, collectFreq, collectCores } from './collector.js';
 import { render as renderTable } from './table.js';
 import { init as initDetail } from './detail.js';
 import { update as updateStatus } from './status.js';
@@ -53,8 +53,9 @@ function init() {
   updateStatus();
   updatePerf();
 
-  // Collect CPU freq
+  // Collect CPU freq + core count
   collectFreq().then(function(f) { if (f > 0) setSt({ cpuFreq: [f] }); }).catch(function() {});
+  collectCores().then(function(c) { if (c > 0) setSt({ cpuCores: c }); }).catch(function() {});
 
   // Start polling
   startPoll(getSt().settings.interval);
