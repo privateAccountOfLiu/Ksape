@@ -3,7 +3,7 @@ const S = {
   procs: [], selPid: null, detail: null,
   cpuStat: null, prevCpu: null, cpuPct: 0,
   mem: null, load: null, uptime: 0, cpuFreq: null,
-  search: '', sortKey: 'pid', sortDir: 'asc',
+  search: '', stateFilter: 'all', sortKey: 'pid', sortDir: 'asc',
   settings: { interval: 3000, showKernel: false, showSystem: true }
 };
 

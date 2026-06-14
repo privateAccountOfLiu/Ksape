@@ -9,6 +9,7 @@ export function render() {
   if (q) list = list.filter(function(p) { return String(p.pid).indexOf(q) >= 0 || (p.name && p.name.toLowerCase().indexOf(q) >= 0); });
   if (!S.settings.showKernel) list = list.filter(function(p) { return p.name && !p.name.startsWith('['); });
   if (!S.settings.showSystem) list = list.filter(function(p) { return p.user !== 'root' && p.user !== 'system'; });
+  if (S.stateFilter && S.stateFilter !== 'all') list = list.filter(function(p) { return p.state === S.stateFilter; });
 
   list.sort(function(a, b) {
     var va = a[sortKey], vb = b[sortKey];
@@ -21,7 +22,18 @@ export function render() {
   var pc = document.getElementById('proc-count');
   if (pc) pc.textContent = list.length + ' procs';
 
-  var h = '<table class="proc-table"><thead><tr>' +
+  // State filter bar
+  var states = [{k:'all',l:'All'},{k:'R',l:'Run'},{k:'S',l:'Sleep'},{k:'D',l:'Disk'},{k:'T',l:'Stop'},{k:'Z',l:'Zombie'}];
+  var fb = '<div class="state-filter">';
+  for (var si = 0; si < states.length; si++) {
+    var sf = states[si], active = S.stateFilter === sf.k ? ' active' : '';
+    fb += '<span class="sf-item' + active + '" data-sf="' + sf.k + '" style="cursor:pointer">';
+    if (sf.k !== 'all') fb += '<span class="state-dot ' + fd(sf.k) + '"></span>';
+    fb += sf.l + '</span>';
+  }
+  fb += '</div>';
+
+  var h = fb + '<table class="proc-table"><thead><tr>' +
     '<th style="width:24px;text-align:center"></th>' +
     '<th style="width:50px" data-sk="pid"' + (sortKey === 'pid' ? ' class="sorted"' : '') + '>PID' + (sortKey === 'pid' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
     '<th data-sk="name"' + (sortKey === 'name' ? ' class="sorted"' : '') + '>Name' + (sortKey === 'name' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
@@ -42,6 +54,17 @@ export function render() {
 
   var el = document.getElementById('process-list');
   el.innerHTML = list.length === 0 ? '<div class="empty"><span>No processes</span></div>' : h;
+
+  // Filter click handlers
+  var sfItems = el.querySelectorAll('.sf-item');
+  for (var si2 = 0; si2 < sfItems.length; si2++) {
+    sfItems[si2].addEventListener('click', function() {
+      var sfKey = this.getAttribute('data-sf');
+      setSt({ stateFilter: sfKey });
+      getSt().stateFilter = sfKey;
+      render();
+    });
+  }
 
   // Click handlers
   var rows = el.querySelectorAll('tbody tr');
