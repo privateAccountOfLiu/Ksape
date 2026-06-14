@@ -24,16 +24,16 @@ export function render() {
 
   // State filter bar
   var states = [{k:'all',l:'All'},{k:'R',l:'Run'},{k:'S',l:'Sleep'},{k:'D',l:'Disk'},{k:'T',l:'Stop'},{k:'Z',l:'Zombie'}];
-  var fb = '<div class="state-filter">';
+  var fBar = '<div class="state-filter">';
   for (var si = 0; si < states.length; si++) {
     var sf = states[si], active = S.stateFilter === sf.k ? ' active' : '';
-    fb += '<span class="sf-item' + active + '" data-sf="' + sf.k + '" style="cursor:pointer">';
-    if (sf.k !== 'all') fb += '<span class="state-dot ' + fd(sf.k) + '"></span>';
-    fb += sf.l + '</span>';
+    fBar += '<span class="sf-item' + active + '" data-sf="' + sf.k + '" style="cursor:pointer">';
+    if (sf.k !== 'all') fBar += '<span class="state-dot ' + fd(sf.k) + '"></span>';
+    fBar += sf.l + '</span>';
   }
-  fb += '</div>';
+  fBar += '</div>';
 
-  var h = fb + '<table class="proc-table"><thead><tr>' +
+  var h = fBar + '<table class="proc-table"><thead><tr>' +
     '<th style="width:24px;text-align:center"></th>' +
     '<th style="width:50px" data-sk="pid"' + (sortKey === 'pid' ? ' class="sorted"' : '') + '>PID' + (sortKey === 'pid' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
     '<th data-sk="name"' + (sortKey === 'name' ? ' class="sorted"' : '') + '>Name' + (sortKey === 'name' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
