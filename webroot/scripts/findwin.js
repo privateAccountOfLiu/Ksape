@@ -93,7 +93,7 @@ async function fetchForeground() {
         '<div class="perf-card"><div class="pc-h">RSS</div><div class="pc-v" style="font-size:14px">' + formatBytes((proc.rssKb || 0) * 1024) + '</div></div>' +
         '<div class="perf-card"><div class="pc-h">User</div><div class="pc-v" style="font-size:14px">' + esc(proc.user) + '</div></div>' +
         '</div>';
-      html += '<button class="btn btn-primary" style="width:100%" id="fw-select-top">Select This Process</button>';
+      html += '<button class="btn btn-primary" style="width:100%;justify-content:center" id="fw-select-top">Select This Process</button>';
     } else {
       html += '<div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Process not found in current process list.</div>';
     }
