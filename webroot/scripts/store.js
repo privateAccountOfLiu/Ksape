@@ -1,24 +1,20 @@
 // Simple pub/sub state store
-const S = {
+var state = {
   procs: [], selPid: null, detail: null,
   cpuStat: null, prevCpu: null, cpuPct: 0,
-  mem: null, load: null, uptime: 0, cpuFreq: null,
+  mem: null, load: null, uptime: 0, cpuFreq: null, cpuCores: 4,
   search: '', stateFilter: 'all', sortKey: 'pid', sortDir: 'asc',
   settings: { interval: 3000, showKernel: false, showSystem: true }
 };
 
-const subs = {};
+var subscribers = {};
 
-export function getSt() { return S; }
+export function getState()         { return state; }
+export function subscribe(key, fn) { if (!subscribers[key]) subscribers[key] = []; subscribers[key].push(fn); }
 
-export function setSt(o) {
-  var ch = [];
-  for (var k in o) { if (S[k] !== o[k]) { S[k] = o[k]; ch.push(k); } }
-  ch.forEach(function(k) { if (subs[k]) subs[k].forEach(function(f) { f(S[k]); }); });
-  if (subs['*']) subs['*'].forEach(function(f) { f(ch); });
-}
-
-export function sub(k, fn) {
-  if (!subs[k]) subs[k] = [];
-  subs[k].push(fn);
+export function setState(o) {
+  var changed = [];
+  for (var k in o) { if (state[k] !== o[k]) { state[k] = o[k]; changed.push(k); } }
+  changed.forEach(function(k) { if (subscribers[k]) subscribers[k].forEach(function(f) { f(state[k]); }); });
+  if (subscribers['*']) subscribers['*'].forEach(function(f) { f(changed); });
 }

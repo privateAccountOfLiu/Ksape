@@ -1,20 +1,21 @@
 import { exec } from './bridge.js';
-import { getSt } from './store.js';
+import { getState } from './store.js';
 
-// Commands
-const CMD = {
+// Shell commands
+var CMD = {
   procs: "ps -A -o PID,PPID,USER,S,RSS,%CPU,ARGS 2>/dev/null | tail -n +2",
-  cpu: "head -n 1 /proc/stat 2>/dev/null",
-  mem: "cat /proc/meminfo 2>/dev/null",
-  load: "cat /proc/loadavg 2>/dev/null",
-  uptime: "cat /proc/uptime 2>/dev/null",
-  freq: "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null",
+  cpu:   "head -n 1 /proc/stat 2>/dev/null",
+  mem:   "cat /proc/meminfo 2>/dev/null",
+  load:  "cat /proc/loadavg 2>/dev/null",
+  uptime:"cat /proc/uptime 2>/dev/null",
+  freq:  "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null",
   cores: "grep -c ^processor /proc/cpuinfo 2>/dev/null",
-  net: "cat /proc/net/tcp /proc/net/udp 2>/dev/null",
+  net:   "cat /proc/net/tcp /proc/net/udp 2>/dev/null",
   sysinfo: "echo 'SYS:';uname -a 2>/dev/null;echo 'MEM:';cat /proc/meminfo 2>/dev/null;echo 'STO:';df -h 2>/dev/null;echo 'LOG:';dmesg 2>/dev/null | tail -n 30",
 };
 
-// Parsers
+/* ===== Parsers ===== */
+
 function parseProcs(raw) {
   if (!raw) return [];
   var lines = raw.trim().split('\n'), procs = [];
@@ -49,19 +50,15 @@ function parseLoad(raw) {
   return { l1: parseFloat(p[0]) || 0, l5: parseFloat(p[1]) || 0, l15: parseFloat(p[2]) || 0 };
 }
 
-// Collectors
+/* ===== Collectors ===== */
+
 export async function collectOverview() {
   try {
-    var pr = await exec(CMD.procs);
-    var cr = await exec(CMD.cpu);
-    var mr = await exec(CMD.mem);
-    var lr = await exec(CMD.load);
-    var ur = await exec(CMD.uptime);
+    var pr = await exec(CMD.procs), cr = await exec(CMD.cpu), mr = await exec(CMD.mem);
+    var lr = await exec(CMD.load), ur = await exec(CMD.uptime);
     return {
-      procs: parseProcs(pr.stdout),
-      cpuStat: parseCpu(cr.stdout),
-      mem: parseMem(mr.stdout),
-      load: parseLoad(lr.stdout),
+      procs: parseProcs(pr.stdout), cpuStat: parseCpu(cr.stdout),
+      mem: parseMem(mr.stdout), load: parseLoad(lr.stdout),
       uptime: parseFloat((ur.stdout || '0').trim().split(/\s+/)[0]) || 0,
     };
   } catch (e) { return { procs: [], cpuStat: null, mem: null, load: null, uptime: 0 }; }
@@ -78,58 +75,35 @@ export async function collectDetail(pid) {
       exec("cat /proc/" + pid + "/environ 2>/dev/null | tr '\\0' '\\n'"),
       exec("ls /proc/" + pid + "/task/ 2>/dev/null"),
     ];
-    var r = [];
-    for (var i = 0; i < cmds.length; i++) { var res = await cmds[i]; r.push(res.stdout || ''); }
-
-    var st = parseStat(r[1]), status = parseStatus(r[0]), mem = parseSmaps(r[3]);
+    var results = []; for (var i = 0; i < cmds.length; i++) { var res = await cmds[i]; results.push(res.stdout || ''); }
+    var st = parseStat(results[1]), status = parseStatus(results[0]), mem = parseSmaps(results[3]);
     if (Object.keys(mem).length === 0) {
       var fb = await exec("cat /proc/" + pid + "/smaps 2>/dev/null | grep '^Pss:' | awk '{sum+=$2}END{print sum}'");
       mem = { Pss: parseInt(fb.stdout, 10) || 0 };
     }
-    return { pid: pid, stat: st, status: status, cmdline: r[2].trim(), memory: mem, fds: parseFd(r[4]), environ: parseEnv(r[5]), threads: r[6].trim().split('\n').filter(Boolean) };
+    return { pid: pid, stat: st, status: status, cmdline: results[2].trim(), memory: mem, fds: parseFd(results[4]), environ: parseEnv(results[5]), threads: results[6].trim().split('\n').filter(Boolean) };
   } catch (e) { return { pid: pid, error: String(e) }; }
 }
 
-export async function collectNet() {
-  try { var r = await exec(CMD.net); return parseNet(r.stdout); } catch (e) { return []; }
-}
+export async function collectNet()     { try { var r = await exec(CMD.net); return parseNet(r.stdout); } catch (e) { return []; } }
+export async function collectFreq()    { try { var r = await exec(CMD.freq); return parseInt((r.stdout || '').trim(), 10) || 0; } catch (e) { return 0; } }
+export async function collectCores()   { try { var r = await exec(CMD.cores); return parseInt((r.stdout || '').trim(), 10) || 4; } catch (e) { return 4; } }
+export async function collectSysInfo() { try { var r = await exec(CMD.sysinfo); return (r.stdout || '').replace(/</g, '&lt;'); } catch (e) { return 'Error: ' + String(e); } }
+export async function killProc(pid)    { var r = await exec("kill -9 " + pid + " 2>/dev/null"); return { success: r.errno === 0, stderr: r.stderr }; }
+export async function reniceProc(pid, pri) { var r = await exec("renice " + pri + " -p " + pid + " 2>/dev/null"); return { success: r.errno === 0, stderr: r.stderr }; }
 
 export async function collectProcNet(pid) {
   try {
     var fdR = await exec("ls -l /proc/" + pid + "/fd/ 2>/dev/null");
-    var fdOut = fdR.stdout || '';
-    var inodes = [];
-    var re = /socket:\[(\d+)\]/g, m;
-    while ((m = re.exec(fdOut)) !== null) { inodes.push(m[1]); }
+    var inodes = [], re = /socket:\[(\d+)\]/g, m;
+    while ((m = re.exec(fdR.stdout || '')) !== null) { inodes.push(m[1]); }
     var netR = await exec(CMD.net);
-    var all = parseNet(netR.stdout);
-    return all.filter(function(c) { return inodes.indexOf(String(c.inode)) >= 0; });
+    return parseNet(netR.stdout).filter(function(c) { return inodes.indexOf(String(c.inode)) >= 0; });
   } catch (e) { return []; }
 }
 
-export async function collectFreq() {
-  try { var r = await exec(CMD.freq); return parseInt((r.stdout || '').trim(), 10) || 0; } catch (e) { return 0; }
-}
+/* ===== Sub-parsers ===== */
 
-export async function collectCores() {
-  try { var r = await exec(CMD.cores); return parseInt((r.stdout || '').trim(), 10) || 4; } catch (e) { return 4; }
-}
-
-export async function collectSysInfo() {
-  try { var r = await exec(CMD.sysinfo); return (r.stdout || '').replace(/</g, '&lt;'); } catch (e) { return 'Error: ' + String(e); }
-}
-
-export async function killProc(pid) {
-  var r = await exec("kill -9 " + pid + " 2>/dev/null");
-  return { success: r.errno === 0, stderr: r.stderr };
-}
-
-export async function reniceProc(pid, pri) {
-  var r = await exec("renice " + pri + " -p " + pid + " 2>/dev/null");
-  return { success: r.errno === 0, stderr: r.stderr };
-}
-
-// Sub-parsers
 function parseStat(raw) {
   if (!raw) return null;
   var p = raw.indexOf(')'); if (p < 0) return null;
@@ -170,11 +144,15 @@ function parseEnv(raw) {
 }
 
 function h2i(h) { if (h.length !== 8) return h; return parseInt(h.slice(6, 8), 16) + '.' + parseInt(h.slice(4, 6), 16) + '.' + parseInt(h.slice(2, 4), 16) + '.' + parseInt(h.slice(0, 2), 16); }
-var TS = { '01': 'ESTABLISHED', '02': 'SYN_SENT', '03': 'SYN_RECV', '04': 'FIN_WAIT1', '05': 'FIN_WAIT2', '06': 'TIME_WAIT', '07': 'CLOSE', '08': 'CLOSE_WAIT', '09': 'LAST_ACK', '0A': 'LISTEN', '0B': 'CLOSING' };
+var TCP_STATES = { '01': 'ESTABLISHED', '02': 'SYN_SENT', '03': 'SYN_RECV', '04': 'FIN_WAIT1', '05': 'FIN_WAIT2', '06': 'TIME_WAIT', '07': 'CLOSE', '08': 'CLOSE_WAIT', '09': 'LAST_ACK', '0A': 'LISTEN', '0B': 'CLOSING' };
 
 function parseNet(raw) {
   if (!raw) return [];
   var lines = raw.trim().split('\n'), conns = [];
-  for (var i = 1; i < lines.length; i++) { var f = lines[i].trim().split(/\s+/); if (f.length < 10) continue; var lc = f[1].lastIndexOf(':'), rc = f[2].lastIndexOf(':'); var inode = parseInt(f[9], 10) || 0; conns.push({ proto: 'tcp', local: h2i(f[1].slice(0, lc)) + ':' + parseInt(f[1].slice(lc + 1), 16), remote: h2i(f[2].slice(0, rc)) + ':' + parseInt(f[2].slice(rc + 1), 16), state: TS[f[3]] || f[3], inode: inode }); }
+  for (var i = 1; i < lines.length; i++) {
+    var f = lines[i].trim().split(/\s+/); if (f.length < 10) continue;
+    var lc = f[1].lastIndexOf(':'), rc = f[2].lastIndexOf(':');
+    conns.push({ proto: 'tcp', local: h2i(f[1].slice(0, lc)) + ':' + parseInt(f[1].slice(lc + 1), 16), remote: h2i(f[2].slice(0, rc)) + ':' + parseInt(f[2].slice(rc + 1), 16), state: TCP_STATES[f[3]] || f[3], inode: parseInt(f[9], 10) || 0 });
+  }
   return conns;
 }
