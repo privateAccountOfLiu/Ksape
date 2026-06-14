@@ -22,18 +22,10 @@ export function render() {
   var pc = document.getElementById('proc-count');
   if (pc) pc.textContent = list.length + ' procs';
 
-  // State filter bar
-  var states = [{k:'all',l:'All'},{k:'R',l:'Run'},{k:'S',l:'Sleep'},{k:'D',l:'Disk'},{k:'T',l:'Stop'},{k:'Z',l:'Zombie'}];
-  var fBar = '<div class="state-filter">';
-  for (var si = 0; si < states.length; si++) {
-    var sf = states[si], active = S.stateFilter === sf.k ? ' active' : '';
-    fBar += '<span class="sf-item' + active + '" data-sf="' + sf.k + '" style="cursor:pointer">';
-    if (sf.k !== 'all') fBar += '<span class="state-dot ' + fd(sf.k) + '"></span>';
-    fBar += sf.l + '</span>';
-  }
-  fBar += '</div>';
+  // State filter bar (rendered outside #process-list so it persists when list is empty)
+  renderFilter(S);
 
-  var h = fBar + '<table class="proc-table"><thead><tr>' +
+  var h = '<table class="proc-table"><thead><tr>' +
     '<th style="width:24px;text-align:center"></th>' +
     '<th style="width:50px" data-sk="pid"' + (sortKey === 'pid' ? ' class="sorted"' : '') + '>PID' + (sortKey === 'pid' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
     '<th data-sk="name"' + (sortKey === 'name' ? ' class="sorted"' : '') + '>Name' + (sortKey === 'name' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
@@ -55,17 +47,6 @@ export function render() {
   var el = document.getElementById('process-list');
   el.innerHTML = list.length === 0 ? '<div class="empty"><span>No processes</span></div>' : h;
 
-  // Filter click handlers
-  var sfItems = el.querySelectorAll('.sf-item');
-  for (var si2 = 0; si2 < sfItems.length; si2++) {
-    sfItems[si2].addEventListener('click', function() {
-      var sfKey = this.getAttribute('data-sf');
-      setSt({ stateFilter: sfKey });
-      getSt().stateFilter = sfKey;
-      render();
-    });
-  }
-
   // Click handlers
   var rows = el.querySelectorAll('tbody tr');
   for (var j = 0; j < rows.length; j++) {
@@ -82,6 +63,28 @@ export function render() {
       var sk = this.getAttribute('data-sk');
       if (sortKey === sk) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
       else { sortKey = sk; sortDir = 'asc'; }
+      render();
+    });
+  }
+}
+
+function renderFilter(S) {
+  var el = document.getElementById('state-filter-bar');
+  if (!el) return;
+  var states = [{k:'all',l:'All'},{k:'R',l:'Run'},{k:'S',l:'Sleep'},{k:'D',l:'Disk'},{k:'T',l:'Stop'},{k:'Z',l:'Zombie'}];
+  var h = '';
+  for (var i = 0; i < states.length; i++) {
+    var sf = states[i], active = S.stateFilter === sf.k ? ' active' : '';
+    h += '<span class="sf-item' + active + '" data-sf="' + sf.k + '">';
+    if (sf.k !== 'all') h += '<span class="state-dot ' + fd(sf.k) + '"></span>';
+    h += sf.l + '</span>';
+  }
+  el.innerHTML = h;
+  var items = el.querySelectorAll('.sf-item');
+  for (var j = 0; j < items.length; j++) {
+    items[j].addEventListener('click', function() {
+      var sfKey = this.getAttribute('data-sf');
+      S.stateFilter = sfKey;
       render();
     });
   }
