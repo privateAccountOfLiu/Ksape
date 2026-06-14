@@ -26,7 +26,7 @@ async function loadDetail(pid) {
 }
 
 function renderDetail(d) {
-  var s = d.status || {}, st = d.stat || {}, mem = d.memory || {}, name = s.name || '?', state = (s.state || st.state || 'S')[0];
+  var s = d.status || {}, st = d.stat || {}, mem = d.memory || {}, name = d.cmdline || s.name || '?', state = (s.state || st.state || 'S')[0];
   var db = document.getElementById('dbody');
   db.innerHTML = '';
 
