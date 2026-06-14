@@ -5,3 +5,5 @@ src/
 *.zip
 *.tar.gz
 .claude/
+webroot/bundle.js
+webroot/bundle.js.map
