@@ -30,4 +30,6 @@ body{display:grid;grid-template-rows:var(--hdr) 1fr var(--ftr);grid-template-col
   #sbar{gap:6px;font-size:9px;padding:0 8px}
   .proc-table th{padding:5px 8px;font-size:9px}
   .proc-table td{padding:3px 8px;font-size:11px}
+  .state-filter{justify-content:center !important;gap:3px;padding:4px 8px}
+  .sf-item{padding:3px 8px;font-size:10px}
 }
