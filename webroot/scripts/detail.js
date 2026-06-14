@@ -4,6 +4,14 @@ import { toast } from './bridge.js';
 import { fb, fs, fd } from './utils.js';
 
 export function init() {
+  // Add back button for narrow screens
+  var detailEl = document.getElementById('detail');
+  var backBtn = document.createElement('div');
+  backBtn.id = 'detail-back';
+  backBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> Back';
+  backBtn.addEventListener('click', function() { setSt({ selPid: null }); });
+  detailEl.insertBefore(backBtn, detailEl.firstChild);
+
   sub('selPid', function(pid) {
     var d = document.getElementById('detail');
     var db = document.getElementById('dbody');

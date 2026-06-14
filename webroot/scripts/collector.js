@@ -3,7 +3,7 @@ import { getSt } from './store.js';
 
 // Commands
 const CMD = {
-  procs: "ps -A -o PID,PPID,USER,S,RSS,ARGS 2>/dev/null | tail -n +2",
+  procs: "ps -A -o PID,PPID,USER,S,RSS,%CPU,ARGS 2>/dev/null | tail -n +2",
   cpu: "head -n 1 /proc/stat 2>/dev/null",
   mem: "cat /proc/meminfo 2>/dev/null",
   load: "cat /proc/loadavg 2>/dev/null",
@@ -18,8 +18,8 @@ function parseProcs(raw) {
   if (!raw) return [];
   var lines = raw.trim().split('\n'), procs = [];
   for (var i = 0; i < lines.length; i++) {
-    var f = lines[i].trim().split(/\s+/); if (f.length < 6) continue;
-    procs.push({ pid: parseInt(f[0], 10) || 0, ppid: parseInt(f[1], 10) || 0, user: f[2] || '-', state: (f[3] || 'S')[0], rssKb: parseInt(f[4], 10) || 0, name: f.slice(5).join(' ') || '?', cpuPct: 0, memPct: 0 });
+    var f = lines[i].trim().split(/\s+/); if (f.length < 7) continue;
+    procs.push({ pid: parseInt(f[0], 10) || 0, ppid: parseInt(f[1], 10) || 0, user: f[2] || '-', state: (f[3] || 'S')[0], rssKb: parseInt(f[4], 10) || 0, cpuPct: parseFloat(f[5]) || 0, name: f.slice(6).join(' ') || '?', memPct: 0 });
   }
   return procs;
 }

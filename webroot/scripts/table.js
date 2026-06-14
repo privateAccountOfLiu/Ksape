@@ -23,16 +23,18 @@ export function render() {
 
   var h = '<table class="proc-table"><thead><tr>' +
     '<th style="width:24px;text-align:center"></th>' +
-    '<th style="width:55px" data-sk="pid"' + (sortKey === 'pid' ? ' class="sorted"' : '') + '>PID' + (sortKey === 'pid' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
+    '<th style="width:50px" data-sk="pid"' + (sortKey === 'pid' ? ' class="sorted"' : '') + '>PID' + (sortKey === 'pid' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
     '<th data-sk="name"' + (sortKey === 'name' ? ' class="sorted"' : '') + '>Name' + (sortKey === 'name' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
-    '<th style="width:60px;text-align:right" data-sk="rssKb"' + (sortKey === 'rssKb' ? ' class="sorted"' : '') + '>RSS' + (sortKey === 'rssKb' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
+    '<th style="width:48px;text-align:right" data-sk="cpuPct"' + (sortKey === 'cpuPct' ? ' class="sorted"' : '') + '>CPU%' + (sortKey === 'cpuPct' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
+    '<th style="width:58px;text-align:right" data-sk="rssKb"' + (sortKey === 'rssKb' ? ' class="sorted"' : '') + '>RSS' + (sortKey === 'rssKb' ? (sortDir === 'asc' ? ' ▴' : ' ▾') : '') + '</th>' +
     '<th style="width:60px">User</th></tr></thead><tbody>';
 
   for (var i = 0; i < list.length; i++) {
     var p = list[i], sel = p.pid === S.selPid ? ' class="selected"' : '';
     h += '<tr data-pid="' + p.pid + '"' + sel + '>' +
       '<td style="text-align:center"><span class="state-dot ' + fd(p.state) + '"></span></td>' +
-      '<td>' + p.pid + '</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">' + esc(p.name) + '</td>' +
+      '<td>' + p.pid + '</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">' + esc(p.name) + '</td>' +
+      '<td style="text-align:right">' + (p.cpuPct || 0).toFixed(1) + '</td>' +
       '<td style="text-align:right">' + fb((p.rssKb || 0) * 1024) + '</td>' +
       '<td>' + esc(p.user) + '</td></tr>';
   }
