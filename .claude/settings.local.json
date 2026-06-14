@@ -46,7 +46,9 @@
       "Bash(git commit -m ' *)",
       "Bash(git remote *)",
       "Bash(git push *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(MSYS_NO_PATHCONV=1 adb push webroot/ /data/adb/modules/Ksape/webroot/)",
+      "Bash(adb logcat *)"
     ]
   }
 }
